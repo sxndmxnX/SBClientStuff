@@ -1,1 +1,1 @@
-jst some stuff for noir. the speedster code is a project i'm working on, which is modding ship properties, like speed n damage n shi. it worked once. then i lost the code cause a power outage. its great.
+jst some xtra stuff for noir, stuff thats not for CSS or looks yknow. the a-speedster code is a project i'm working on, which is modding ship properties, like speed n damage n shi. it worked once. then i lost the code cause a power outage. its great, lifes great, ITS F*CKIN GREAT.
