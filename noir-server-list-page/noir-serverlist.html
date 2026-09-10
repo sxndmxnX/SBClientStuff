@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOIR Server List</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a24;
+            --border: rgba(211, 211, 211, 0.08);
+            --border-bright: rgba(211, 211, 211, 0.2);
+            --text: #d3d3d3;
+            --text-dim: #888;
+            --text-darker: #555;
+            --accent: #44ff88;
+            --accent-dim: rgba(68, 255, 136, 0.15);
+            --danger: #ff4466;
+            --warning: #ffaa44;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(211, 211, 211, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(211, 211, 211, 0.25); }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { display: flex; align-items: baseline; gap: 12px; }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(211, 211, 211, 0.2);
+        }
+
+        .logo-sub {
+            font-size: 10px;
+            color: var(--text-darker);
+            letter-spacing: 2px;
+        }
+
+        .header-stats { display: flex; gap: 24px; align-items: center; }
+
+        .stat { text-align: right; }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--text-darker);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--border-bright);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .refresh-btn.spinning { animation: spin 1s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== MAIN LAYOUT ===== */
+        .container { display: flex; height: calc(100vh - 73px); }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            padding: 20px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .filter-section { margin-bottom: 24px; }
+
+        .filter-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-darker);
+            margin-bottom: 10px;
+        }
+
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .chip {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--border-bright);
+        }
+
+        .chip.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .search-box:focus { border-color: var(--accent); }
+        .search-box::placeholder { color: var(--text-darker); }
+
+        .search-box.player-search {
+            border-color: rgba(255, 170, 68, 0.3);
+        }
+
+        .search-box.player-search:focus {
+            border-color: var(--warning);
+        }
+
+        .player-search-hint {
+            font-size: 10px;
+            color: var(--text-darker);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .player-search-hint.active {
+            color: var(--warning);
+        }
+
+        .clear-search {
+            display: none;
+            margin-top: 8px;
+            width: 100%;
+            padding: 6px 12px;
+            background: rgba(255, 68, 102, 0.1);
+            border: 1px solid rgba(255, 68, 102, 0.4);
+            border-radius: 6px;
+            color: var(--danger);
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .clear-search:hover {
+            background: rgba(255, 68, 102, 0.2);
+        }
+
+        .clear-search.visible { display: block; }
+
+        /* ===== SERVER LIST ===== */
+        .server-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        .server-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .server-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .server-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-bright);
+            transform: translateX(4px);
+        }
+
+        .server-card.player-match {
+            border-color: rgba(255, 170, 68, 0.4);
+        }
+
+        .server-info { flex: 1; min-width: 0; }
+
+        .server-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .server-meta {
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+
+        .server-meta span { display: flex; align-items: center; }
+
+        .match-badge {
+            background: rgba(255, 170, 68, 0.15);
+            color: var(--warning);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .server-players {
+            text-align: right;
+            flex-shrink: 0;
+            min-width: 70px;
+        }
+
+        .players-count {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .players-label {
+            font-size: 9px;
+            color: var(--text-darker);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .server-time {
+            font-size: 11px;
+            color: var(--text-darker);
+            margin-top: 2px;
+        }
+
+        /* ===== EMPTY / LOADING ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-darker);
+            font-size: 13px;
+        }
+
+        .empty-state-title {
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-bright);
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title { font-size: 16px; font-weight: 600; color: var(--text); }
+
+        .modal-close {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            color: var(--text-dim);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover { border-color: var(--danger); color: var(--danger); }
+
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-bright);
+            background: transparent;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .btn:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .btn-primary {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-primary:hover { background: rgba(68, 255, 136, 0.25); }
+
+        /* ===== DETAILS GRID ===== */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 10px;
+            color: var(--text-darker);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: var(--text);
+            margin-top: 2px;
+        }
+
+        .detail-value.accent { color: var(--accent); }
+
+        /* ===== PLAYER LIST ===== */
+        .section-title {
+            font-size: 10px;
+            color: var(--text-darker);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: background 0.15s;
+        }
+
+        .player-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+        .player-row.highlight {
+            background: rgba(255, 170, 68, 0.15);
+            border: 1px solid rgba(255, 170, 68, 0.3);
+        }
+
+        .player-name { color: var(--text); }
+
+        .player-ecp {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(68, 255, 136, 0.15);
+            color: var(--accent);
+        }
+
+        .player-ecp.no-ecp {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-darker);
+        }
+
+        /* ===== TEAM SCORES ===== */
+        .team-scores {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .team-score { font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                max-height: 220px;
+            }
+            .header-stats .stat { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-text">NOIR</div>
+            <div class="logo-sub">server list</div>
+        </div>
+        <div class="header-stats">
+            <div class="stat">
+                <div class="stat-value" id="total-servers">0</div>
+                <div class="stat-label">Servers</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="total-players">0</div>
+                <div class="stat-label">Players</div>
+            </div>
+            <button class="refresh-btn" id="refresh-btn" title="Refresh">Refresh</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="filter-section">
+                <div class="filter-title">Search Server</div>
+                <input type="text" class="search-box" id="search-box" placeholder="Filter by name...">
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Search Player</div>
+                <input type="text" class="search-box player-search" id="player-search-box" placeholder="Player name...">
+                <div class="player-search-hint" id="player-search-hint">
+                    Finds servers where a player is active
+                </div>
+                <button class="clear-search" id="clear-player-search">Clear Player Search</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Region</div>
+                <div class="filter-chips" id="region-filters">
+                    <div class="chip active" data-region="America">America</div>
+                    <div class="chip" data-region="Europe">Europe</div>
+                    <div class="chip" data-region="Asia">Asia</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Game Mode</div>
+                <div class="filter-chips" id="mode-filters">
+                    <div class="chip active" data-mode="team">Team</div>
+                    <div class="chip active" data-mode="survival">Survival</div>
+                    <div class="chip active" data-mode="deathmatch">Deathmatch</div>
+                    <div class="chip active" data-mode="invasion">Invasion</div>
+                    <div class="chip active" data-mode="modding">Modding</div>
+                    <div class="chip active" data-mode="custom">Custom</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Sort By</div>
+                <div class="filter-chips" id="sort-filters">
+                    <div class="chip active" data-sort="players">Players</div>
+                    <div class="chip" data-sort="time">Time</div>
+                    <div class="chip" data-sort="name">Name</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="server-list">
+            <div class="server-list-header">
+                <span id="server-count">Loading servers...</span>
+                <span id="last-update"></span>
+            </div>
+            <div id="server-list-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching servers...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Server Name</div>
+                <button class="modal-close" id="modal-close">X</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn" id="modal-cancel">Close</button>
+                <button class="btn btn-primary" id="modal-join">Join Server</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            simStatusUrl: 'https://starblast.dankdmitron.dev/api/simstatus.json',
+            staticApiUrl: 'https://starblast.dankdmitron.dev/api/status/',
+            pollRate: 10000,
+            playerSearchConcurrency: 5,
+            playerSearchCacheMs: 8000,
+            modeNames: {
+                team: 'Team Mode',
+                survival: 'Survival',
+                deathmatch: 'Deathmatch',
+                modding: 'Modding',
+                custom: 'Custom Game',
+                invasion: 'Invasion'
+            }
+        };
+
+        let simStatus = [];
+        let currentRegion = 'America';
+        let enabledModes = ['team', 'survival', 'deathmatch', 'invasion', 'modding', 'custom'];
+        let sortBy = 'players';
+        let searchQuery = '';
+        let playerSearchQuery = '';
+        let playerSearchResults = new Map(); // systemId -> Set of matching player names (lowercased)
+        let playerSearchInProgress = false;
+        let playerSearchToken = 0;
+        let selectedServer = null;
+        let refreshInterval = null;
+
+        // Cache for player data per server
+        const playerCache = new Map(); // key -> { data, timestamp }
+
+        const listContainer = document.getElementById('server-list-container');
+        const serverCount = document.getElementById('server-count');
+        const lastUpdate = document.getElementById('last-update');
+        const totalServers = document.getElementById('total-servers');
+        const totalPlayers = document.getElementById('total-players');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.getElementById('modal-close');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalJoin = document.getElementById('modal-join');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const playerSearchBox = document.getElementById('player-search-box');
+        const playerSearchHint = document.getElementById('player-search-hint');
+        const clearPlayerSearchBtn = document.getElementById('clear-player-search');
+
+        // ==================================================
+        // FETCH SIM STATUS
+        // ==================================================
+        async function fetchServers() {
+            refreshBtn.classList.add('spinning');
+
+            try {
+                const response = await fetch(CONFIG.simStatusUrl);
+                simStatus = await response.json();
+                updateStats();
+
+                if (playerSearchQuery) {
+                    await runPlayerSearch(playerSearchQuery);
+                } else {
+                    renderServerList();
+                }
+
+                lastUpdate.textContent = 'Updated ' + new Date().toLocaleTimeString();
+            } catch(e) {
+                console.error('[NOIR] Fetch error:', e);
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-title">Failed to fetch servers</div>
+                        <div>${escapeHtml(e.message || 'Connection error')}</div>
+                    </div>
+                `;
+            }
+
+            refreshBtn.classList.remove('spinning');
+        }
+
+        // ==================================================
+        // GET FILTERED SYSTEMS
+        // ==================================================
+        function getSystems() {
+            const systems = [];
+
+            for (const server of simStatus) {
+                if (server.location !== currentRegion) continue;
+
+                for (const system of server.systems) {
+                    if (system.unlisted) {
+                        if (!enabledModes.includes('custom')) continue;
+                    } else if (!enabledModes.includes(system.mode)) {
+                        continue;
+                    }
+
+                    if (searchQuery && !system.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                        continue;
+                    }
+
+                    // Player search filter
+                    if (playerSearchQuery) {
+                        const matches = playerSearchResults.get(system.id);
+                        if (!matches || matches.size === 0) continue;
+                    }
+
+                    system.address = server.address;
+                    system.region = server.location;
+                    systems.push(system);
+                }
+            }
+
+            if (sortBy === 'players') {
+                systems.sort((a, b) => b.players - a.players);
+            } else if (sortBy === 'time') {
+                systems.sort((a, b) => a.time - b.time);
+            } else if (sortBy === 'name') {
+                systems.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            return systems;
+        }
+
+        // ==================================================
+        // RENDER SERVER LIST
+        // ==================================================
+        function renderServerList() {
+            const systems = getSystems();
+
+            if (systems.length === 0) {
+                let msg = 'Try adjusting your filters';
+                let title = 'No servers found';
+                if (playerSearchQuery) {
+                    title = 'No players found';
+                    msg = `No active players matching "${escapeHtml(playerSearchQuery)}"`;
+                }
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-title">${title}</div>
+                        <div>${msg}</div>
+                    </div>
+                `;
+                serverCount.textContent = '0 servers';
+                return;
+            }
+
+            if (playerSearchQuery) {
+                serverCount.textContent = `${systems.length} server${systems.length === 1 ? '' : 's'} with matches`;
+            } else {
+                serverCount.textContent = `${systems.length} server${systems.length === 1 ? '' : 's'}`;
+            }
+
+            let html = '';
+            for (const system of systems) {
+                const isCustom = system.unlisted;
+                const modeName = isCustom ? 'Custom Game' : (CONFIG.modeNames[system.mode] || system.mode);
+                const minutes = Math.floor(system.time / 60);
+                const timeStr = minutes > 0 ? `${minutes}m` : '<1m';
+
+                let matchHtml = '';
+                if (playerSearchQuery) {
+                    const matches = playerSearchResults.get(system.id);
+                    if (matches && matches.size > 0) {
+                        const names = Array.from(matches).slice(0, 3).join(', ');
+                        const more = matches.size > 3 ? ` +${matches.size - 3}` : '';
+                        matchHtml = `<span class="match-badge">${matches.size} match${matches.size === 1 ? '' : 'es'}: ${escapeHtml(names)}${more}</span>`;
+                    }
+                }
+
+                html += `
+                    <div class="server-card ${playerSearchQuery ? 'player-match' : ''}" data-id="${system.id}">
+                        <div class="server-info">
+                            <div class="server-name">${escapeHtml(system.name)}</div>
+                            <div class="server-meta">
+                                <span>${modeName}</span>
+                                <span>#${system.id}</span>
+                                ${matchHtml}
+                            </div>
+                        </div>
+                        <div class="server-players">
+                            <div class="players-count">${system.players}</div>
+                            <div class="players-label">players</div>
+                            <div class="server-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            listContainer.innerHTML = html;
+
+            listContainer.querySelectorAll('.server-card').forEach(card => {
+                card.onclick = () => {
+                    const system = systems.find(s => String(s.id) === card.dataset.id);
+                    if (system) showServerDetails(system);
+                };
+            });
+        }
+
+        // ==================================================
+        // PLAYER SEARCH
+        // ==================================================
+        async function runPlayerSearch(query) {
+            const q = query.trim().toLowerCase();
+            if (!q) {
+                playerSearchResults = new Map();
+                playerSearchInProgress = false;
+                renderServerList();
+                return;
+            }
+
+            playerSearchInProgress = true;
+            const myToken = ++playerSearchToken;
+            playerSearchResults = new Map();
+
+            // Show loading
+            listContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Searching for "${escapeHtml(query)}"...
+                </div>
+            `;
+
+            // Build list of systems to search (respecting current filters except player)
+            const targets = [];
+            for (const server of simStatus) {
+                if (server.location !== currentRegion) continue;
+                for (const system of server.systems) {
+                    if (system.unlisted) {
+                        if (!enabledModes.includes('custom')) continue;
+                    } else if (!enabledModes.includes(system.mode)) {
+                        continue;
+                    }
+                    if (searchQuery && !system.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                        continue;
+                    }
+                    targets.push({ system, address: server.address });
+                }
+            }
+
+            if (targets.length === 0) {
+                playerSearchInProgress = false;
+                renderServerList();
+                return;
+            }
+
+            // Concurrency-limited fetch
+            const concurrency = CONFIG.playerSearchConcurrency;
+            let index = 0;
+
+            async function worker() {
+                while (index < targets.length) {
+                    const i = index++;
+                    const target = targets[i];
+                    if (myToken !== playerSearchToken) return; // cancelled
+
+                    const sys = target.system;
+                    const cacheKey = `${sys.id}@${target.address}`;
+                    let info = null;
+
+                    // Check cache
+                    const cached = playerCache.get(cacheKey);
+                    if (cached && Date.now() - cached.timestamp < CONFIG.playerSearchCacheMs) {
+                        info = cached.data;
+                    } else {
+                        try {
+                            const res = await fetch(`${CONFIG.staticApiUrl}${cacheKey}`);
+                            info = await res.json();
+                            playerCache.set(cacheKey, { data: info, timestamp: Date.now() });
+                        } catch(e) {
+                            info = null;
+                        }
+                    }
+
+                    if (myToken !== playerSearchToken) return;
+
+                    if (info && info.players) {
+                        const matches = new Set();
+                        for (const key of Object.keys(info.players)) {
+                            const player = info.players[key];
+                            const name = (player.player_name || player.name || '').toLowerCase();
+                            if (name.includes(q)) {
+                                matches.add(player.player_name || player.name || 'Unknown');
+                            }
+                        }
+                        if (matches.size > 0) {
+                            playerSearchResults.set(sys.id, matches);
+                        }
+                    }
+                }
+            }
+
+            const workers = [];
+            for (let i = 0; i < concurrency; i++) {
+                workers.push(worker());
+            }
+            await Promise.all(workers);
+
+            if (myToken !== playerSearchToken) return;
+
+            playerSearchInProgress = false;
+            renderServerList();
+        }
+
+        // ==================================================
+        // UPDATE STATS
+        // ==================================================
+        function updateStats() {
+            let servers = 0;
+            let players = 0;
+
+            for (const region of simStatus) {
+                servers += region.systems.length;
+                players += region.current_players;
+            }
+
+            totalServers.textContent = servers;
+            totalPlayers.textContent = players.toLocaleString();
+        }
+
+        // ==================================================
+        // SERVER DETAILS MODAL
+        // ==================================================
+        async function showServerDetails(system) {
+            selectedServer = system;
+            modalTitle.textContent = system.name;
+            modalBody.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading server details...
+                </div>
+            `;
+            modalOverlay.classList.add('active');
+
+            try {
+                const response = await fetch(`${CONFIG.staticApiUrl}${system.id}@${system.address}`);
+                const info = await response.json();
+
+                let html = `
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Mode</div>
+                            <div class="detail-value">${escapeHtml(info.mode?.name || 'Unknown')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Region</div>
+                            <div class="detail-value">${escapeHtml(system.region)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Players</div>
+                            <div class="detail-value accent">${system.players}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Time</div>
+                            <div class="detail-value">${Math.floor(system.time / 60)}m</div>
+                        </div>
+                    </div>
+                `;
+
+                if (info.players && Object.keys(info.players).length > 0) {
+                    const players = Object.values(info.players);
+                    html += `<div class="section-title">Players (${players.length})</div>`;
+                    html += `<div class="player-list">`;
+
+                    const q = playerSearchQuery.trim().toLowerCase();
+
+                    for (const player of players) {
+                        const hasECP = player.custom || player.ecp;
+                        const rawName = (player.player_name || player.name || 'Unknown');
+                        const name = escapeHtml(rawName);
+                        const hue = player.hue !== undefined ? player.hue : 0;
+                        const color = `hsl(${hue}, 70%, 65%)`;
+                        const isMatch = q && rawName.toLowerCase().includes(q);
+
+                        html += `
+                            <div class="player-row ${isMatch ? 'highlight' : ''}">
+                                <span class="player-name" style="color: ${color};">${name}</span>
+                                <span class="player-ecp ${hasECP ? '' : 'no-ecp'}">${hasECP ? 'ECP' : 'none'}</span>
+                            </div>
+                        `;
+                    }
+
+                    html += `</div>`;
+                }
+
+                if (info.mode && info.mode.teams && info.mode.teams.length > 0) {
+                    html += `<div class="team-scores"><div class="section-title">Team Scores</div>`;
+
+                    for (const team of info.mode.teams) {
+                        const hue = team.hue || 0;
+                        const color = `hsl(${hue}, 70%, 65%)`;
+                        const score = Math.floor((team.totalScore || 0) / 1000);
+
+                        html += `
+                            <div class="team-row" style="border-left: 3px solid ${color}; background: rgba(255,255,255,0.02);">
+                                <span style="color: ${color}; font-weight: 600;">${escapeHtml(team.name || 'Team')}</span>
+                                <span class="team-score" style="color: ${color};">${score}k</span>
+                            </div>
+                        `;
+                    }
+
+                    html += `</div>`;
+                }
+
+                modalBody.innerHTML = html;
+
+            } catch(e) {
+                console.error('[NOIR] Detail fetch error:', e);
+                modalBody.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-title">Failed to load server details</div>
+                        <div>${escapeHtml(e.message || 'Connection error')}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ==================================================
+        // UTILS
+        // ==================================================
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function debounce(fn, ms) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), ms);
+            };
+        }
+
+        // ==================================================
+        // EVENT HANDLERS
+        // ==================================================
+        document.querySelectorAll('#region-filters .chip').forEach(chip => {
+            chip.onclick = () => {
+                document.querySelectorAll('#region-filters .chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentRegion = chip.dataset.region;
+
+                if (playerSearchQuery) {
+                    runPlayerSearch(playerSearchQuery);
+                } else {
+                    renderServerList();
+                }
+            };
+        });
+
+        document.querySelectorAll('#mode-filters .chip').forEach(chip => {
+            chip.onclick = () => {
+                const mode = chip.dataset.mode;
+                if (enabledModes.includes(mode)) {
+                    enabledModes = enabledModes.filter(m => m !== mode);
+                    chip.classList.remove('active');
+                } else {
+                    enabledModes.push(mode);
+                    chip.classList.add('active');
+                }
+
+                if (playerSearchQuery) {
+                    runPlayerSearch(playerSearchQuery);
+                } else {
+                    renderServerList();
+                }
+            };
+        });
+
+        document.querySelectorAll('#sort-filters .chip').forEach(chip => {
+            chip.onclick = () => {
+                document.querySelectorAll('#sort-filters .chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                sortBy = chip.dataset.sort;
+                renderServerList();
+            };
+        });
+
+        document.getElementById('search-box').oninput = debounce((e) => {
+            searchQuery = e.target.value;
+
+            if (playerSearchQuery) {
+                runPlayerSearch(playerSearchQuery);
+            } else {
+                renderServerList();
+            }
+        }, 200);
+
+        playerSearchBox.oninput = debounce((e) => {
+            const val = e.target.value;
+            playerSearchQuery = val;
+
+            if (val.trim()) {
+                playerSearchHint.classList.add('active');
+                playerSearchHint.textContent = `Searching for "${val.trim()}"...`;
+                clearPlayerSearchBtn.classList.add('visible');
+                runPlayerSearch(val);
+            } else {
+                playerSearchHint.classList.remove('active');
+                playerSearchHint.textContent = 'Finds servers where a player is active';
+                clearPlayerSearchBtn.classList.remove('visible');
+                playerSearchResults = new Map();
+                playerSearchToken++; // cancel any in-flight searches
+                playerSearchInProgress = false;
+                renderServerList();
+            }
+        }, 400);
+
+        clearPlayerSearchBtn.onclick = () => {
+            playerSearchBox.value = '';
+            playerSearchQuery = '';
+            playerSearchResults = new Map();
+            playerSearchToken++;
+            playerSearchInProgress = false;
+            playerSearchHint.classList.remove('active');
+            playerSearchHint.textContent = 'Finds servers where a player is active';
+            clearPlayerSearchBtn.classList.remove('visible');
+            renderServerList();
+        };
+
+        refreshBtn.onclick = fetchServers;
+        modalClose.onclick = () => modalOverlay.classList.remove('active');
+        modalCancel.onclick = () => modalOverlay.classList.remove('active');
+        modalOverlay.onclick = (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+        };
+
+        modalJoin.onclick = () => {
+            if (selectedServer) {
+                const url = `https://starblast.io/#${selectedServer.id}@${selectedServer.address}`;
+                window.open(url, '_blank');
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') modalOverlay.classList.remove('active');
+        });
+
+        // ==================================================
+        // INIT
+        // ==================================================
+        fetchServers();
+        refreshInterval = setInterval(fetchServers, CONFIG.pollRate);
+
+        console.log('%c NOIR serverlist active and running, for now at least ', 'background: #44ff88; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+    </script>
+</body>
+</html>
