@@ -1363,11 +1363,10 @@
         };
 
         modalJoin.onclick = () => {
-            if (selectedServer) {
-                const url = `https://starblast.io/#${selectedServer.id}@${selectedServer.address}`;
-                window.open(url, '_blank');
-            }
-        };
+    if (selectedServer) {
+        window.open(`https://starblast.io/#${selectedServer.id}`, '_blank');
+    }
+};
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') modalOverlay.classList.remove('active');
