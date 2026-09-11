@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230a0a0f'/%3E%3Ctext x='32' y='45' font-family='Inter,sans-serif' font-size='38' font-weight='900' fill='%23d3d3d3' text-anchor='middle' letter-spacing='-2'%3EN%3C/text%3E%3C/svg%3E">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOIR Server List</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230a0a0f'/%3E%3Ctext x='32' y='45' font-family='Inter,sans-serif' font-size='38' font-weight='900' fill='%23d3d3d3' text-anchor='middle' letter-spacing='-2'%3EN%3C/text%3E%3C/svg%3E">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -207,10 +207,7 @@
             transition: all 0.2s;
         }
 
-        .clear-search:hover {
-            background: rgba(255, 68, 102, 0.2);
-        }
-
+        .clear-search:hover { background: rgba(255, 68, 102, 0.2); }
         .clear-search.visible { display: block; }
 
         /* ===== SERVER LIST ===== */
@@ -306,6 +303,7 @@
             font-size: 11px;
             color: var(--text-darker);
             margin-top: 2px;
+            font-variant-numeric: tabular-nums;
         }
 
         /* ===== EMPTY / LOADING ===== */
@@ -358,9 +356,9 @@
             background: var(--bg-card);
             border: 1px solid var(--border-bright);
             border-radius: 16px;
-            width: 500px;
-            max-width: 90vw;
-            max-height: 80vh;
+            width: 720px;
+            max-width: 92vw;
+            max-height: 85vh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
@@ -436,9 +434,15 @@
         /* ===== DETAILS GRID ===== */
         .details-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            .details-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         .detail-label {
@@ -456,15 +460,99 @@
 
         .detail-value.accent { color: var(--accent); }
 
-        /* ===== PLAYER LIST ===== */
+        /* ===== SECTION TITLE ===== */
         .section-title {
             font-size: 10px;
             color: var(--text-darker);
             letter-spacing: 1px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
+        /* ===== TEAM PANELS (matches NOIR sector listing) ===== */
+        .team-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .team-panel {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .team-header {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .team-stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            padding: 3px 0;
+            color: var(--text-dim);
+        }
+
+        .team-stat-row span:last-child {
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .team-roster {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .team-player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .team-player:last-child { border-bottom: none; }
+
+        .team-player-name {
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+
+        .team-player-score {
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
+        }
+
+        .ecp-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .ecp-dot.yes { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+        .ecp-dot.no { background: rgba(255, 255, 255, 0.15); }
+
+        /* ===== PLAYER LIST (non-team modes) ===== */
         .player-list {
             display: flex;
             flex-direction: column;
@@ -496,31 +584,13 @@
             border-radius: 10px;
             background: rgba(68, 255, 136, 0.15);
             color: var(--accent);
+            flex-shrink: 0;
         }
 
         .player-ecp.no-ecp {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-darker);
         }
-
-        /* ===== TEAM SCORES ===== */
-        .team-scores {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .team-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .team-score { font-weight: 700; }
 
         @media (max-width: 768px) {
             .container { flex-direction: column; }
@@ -639,9 +709,9 @@
                 team: 'Team Mode',
                 survival: 'Survival',
                 deathmatch: 'Deathmatch',
+                invasion: 'Invasion',
                 modding: 'Modding',
-                custom: 'Custom Game',
-                invasion: 'Invasion'
+                custom: 'Custom Game'
             }
         };
 
@@ -651,14 +721,13 @@
         let sortBy = 'players';
         let searchQuery = '';
         let playerSearchQuery = '';
-        let playerSearchResults = new Map(); // systemId -> Set of matching player names (lowercased)
+        let playerSearchResults = new Map();
         let playerSearchInProgress = false;
         let playerSearchToken = 0;
         let selectedServer = null;
         let refreshInterval = null;
 
-        // Cache for player data per server
-        const playerCache = new Map(); // key -> { data, timestamp }
+        const playerCache = new Map();
 
         const listContainer = document.getElementById('server-list-container');
         const serverCount = document.getElementById('server-count');
@@ -677,7 +746,31 @@
         const clearPlayerSearchBtn = document.getElementById('clear-player-search');
 
         // ==================================================
-        // FETCH SIM STATUS
+        // MODE RESOLUTION (fixes "Unknown")
+        // ==================================================
+        function resolveModeName(info, system) {
+            // 1. API gave us an object with a name
+            if (info && info.mode && typeof info.mode === 'object' && info.mode.name) {
+                return info.mode.name;
+            }
+            // 2. API gave us a string that we know
+            if (info && typeof info.mode === 'string' && CONFIG.modeNames[info.mode]) {
+                return CONFIG.modeNames[info.mode];
+            }
+            // 3. Fall back to simstatus value
+            if (system && system.mode && CONFIG.modeNames[system.mode]) {
+                return CONFIG.modeNames[system.mode];
+            }
+            // 4. Unlisted = custom
+            if (system && system.unlisted) {
+                return 'Custom Game';
+            }
+            // 5. Absolute fallback
+            return (system && system.mode) || 'Unknown';
+        }
+
+        // ==================================================
+        // FETCH
         // ==================================================
         async function fetchServers() {
             refreshBtn.classList.add('spinning');
@@ -708,7 +801,7 @@
         }
 
         // ==================================================
-        // GET FILTERED SYSTEMS
+        // FILTER
         // ==================================================
         function getSystems() {
             const systems = [];
@@ -727,7 +820,6 @@
                         continue;
                     }
 
-                    // Player search filter
                     if (playerSearchQuery) {
                         const matches = playerSearchResults.get(system.id);
                         if (!matches || matches.size === 0) continue;
@@ -751,7 +843,7 @@
         }
 
         // ==================================================
-        // RENDER SERVER LIST
+        // RENDER LIST
         // ==================================================
         function renderServerList() {
             const systems = getSystems();
@@ -841,7 +933,6 @@
             const myToken = ++playerSearchToken;
             playerSearchResults = new Map();
 
-            // Show loading
             listContainer.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
@@ -849,7 +940,6 @@
                 </div>
             `;
 
-            // Build list of systems to search (respecting current filters except player)
             const targets = [];
             for (const server of simStatus) {
                 if (server.location !== currentRegion) continue;
@@ -872,7 +962,6 @@
                 return;
             }
 
-            // Concurrency-limited fetch
             const concurrency = CONFIG.playerSearchConcurrency;
             let index = 0;
 
@@ -880,13 +969,12 @@
                 while (index < targets.length) {
                     const i = index++;
                     const target = targets[i];
-                    if (myToken !== playerSearchToken) return; // cancelled
+                    if (myToken !== playerSearchToken) return;
 
                     const sys = target.system;
                     const cacheKey = `${sys.id}@${target.address}`;
                     let info = null;
 
-                    // Check cache
                     const cached = playerCache.get(cacheKey);
                     if (cached && Date.now() - cached.timestamp < CONFIG.playerSearchCacheMs) {
                         info = cached.data;
@@ -931,7 +1019,7 @@
         }
 
         // ==================================================
-        // UPDATE STATS
+        // STATS
         // ==================================================
         function updateStats() {
             let servers = 0;
@@ -964,11 +1052,18 @@
                 const response = await fetch(`${CONFIG.staticApiUrl}${system.id}@${system.address}`);
                 const info = await response.json();
 
+                const modeName = resolveModeName(info, system);
+                const modeKey = (info.mode && typeof info.mode === 'object' && info.mode.id)
+                    ? info.mode.id
+                    : (typeof info.mode === 'string' ? info.mode : system.mode);
+
+                const isTeamMode = ['team', 'tteam', 'ctf', 'deathmatch_team'].includes(modeKey);
+
                 let html = `
                     <div class="details-grid">
                         <div class="detail-item">
                             <div class="detail-label">Mode</div>
-                            <div class="detail-value">${escapeHtml(info.mode?.name || 'Unknown')}</div>
+                            <div class="detail-value">${escapeHtml(modeName)}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Region</div>
@@ -985,52 +1080,22 @@
                     </div>
                 `;
 
-                if (info.players && Object.keys(info.players).length > 0) {
-                    const players = Object.values(info.players);
-                    html += `<div class="section-title">Players (${players.length})</div>`;
-                    html += `<div class="player-list">`;
-
-                    const q = playerSearchQuery.trim().toLowerCase();
-
-                    for (const player of players) {
-                        const hasECP = player.custom || player.ecp;
-                        const rawName = (player.player_name || player.name || 'Unknown');
-                        const name = escapeHtml(rawName);
-                        const hue = player.hue !== undefined ? player.hue : 0;
-                        const color = `hsl(${hue}, 70%, 65%)`;
-                        const isMatch = q && rawName.toLowerCase().includes(q);
-
-                        html += `
-                            <div class="player-row ${isMatch ? 'highlight' : ''}">
-                                <span class="player-name" style="color: ${color};">${name}</span>
-                                <span class="player-ecp ${hasECP ? '' : 'no-ecp'}">${hasECP ? 'ECP' : 'none'}</span>
-                            </div>
-                        `;
-                    }
-
-                    html += `</div>`;
-                }
-
-                if (info.mode && info.mode.teams && info.mode.teams.length > 0) {
-                    html += `<div class="team-scores"><div class="section-title">Team Scores</div>`;
-
-                    for (const team of info.mode.teams) {
-                        const hue = team.hue || 0;
-                        const color = `hsl(${hue}, 70%, 65%)`;
-                        const score = Math.floor((team.totalScore || 0) / 1000);
-
-                        html += `
-                            <div class="team-row" style="border-left: 3px solid ${color}; background: rgba(255,255,255,0.02);">
-                                <span style="color: ${color}; font-weight: 600;">${escapeHtml(team.name || 'Team')}</span>
-                                <span class="team-score" style="color: ${color};">${score}k</span>
-                            </div>
-                        `;
-                    }
-
-                    html += `</div>`;
+                if (isTeamMode) {
+                    html += renderTeamView(info, modeKey);
+                } else {
+                    html += renderPlayerView(info);
                 }
 
                 modalBody.innerHTML = html;
+
+                if (playerSearchQuery) {
+                    const q = playerSearchQuery.trim().toLowerCase();
+                    modalBody.querySelectorAll('.player-name, .team-player-name').forEach(el => {
+                        if (el.textContent.toLowerCase().includes(q)) {
+                            el.closest('.player-row, .team-player')?.classList.add('highlight');
+                        }
+                    });
+                }
 
             } catch(e) {
                 console.error('[NOIR] Detail fetch error:', e);
@@ -1041,6 +1106,147 @@
                     </div>
                 `;
             }
+        }
+
+        // ==================================================
+        // TEAM VIEW (matches NOIR sector listing)
+        // ==================================================
+        function renderTeamView(info, modeKey) {
+            const hasECP = (player) => {
+                return !!(player.ecp || player.custom || player.custom_badge ||
+                    player.ecp_custom || (player.badge && player.badge !== 'none'));
+            };
+
+            // Build teams
+            const teams = [];
+            for (let i = 0; i < 3; i++) {
+                teams.push({
+                    name: `Team ${i + 1}`,
+                    hue: null,
+                    players: [],
+                    gems: 0,
+                    level: 0
+                });
+            }
+
+            if (info.players) {
+                for (const key of Object.keys(info.players)) {
+                    const player = info.players[key];
+                    const teamIdx = (player.friendly !== undefined) ? player.friendly
+                                  : (player.team !== undefined) ? player.team
+                                  : 0;
+                    if (teamIdx >= 0 && teamIdx < 3) {
+                        teams[teamIdx].players.push({
+                            name: player.player_name || player.name || 'Unknown',
+                            ecp: hasECP(player),
+                            score: player.score || player.kills || player.points || 0
+                        });
+                        if (player.hue !== undefined && teams[teamIdx].hue === null) {
+                            teams[teamIdx].hue = player.hue;
+                        }
+                    }
+                }
+            }
+
+            // Get gems/level from mode.teams if available
+            if (info.mode && info.mode.teams) {
+                for (let i = 0; i < info.mode.teams.length && i < 3; i++) {
+                    teams[i].gems = info.mode.teams[i].crystals || 0;
+                    teams[i].level = info.mode.teams[i].level || 0;
+                    if (teams[i].hue === null && info.mode.teams[i].hue !== undefined) {
+                        teams[i].hue = info.mode.teams[i].hue;
+                    }
+                    if (info.mode.teams[i].name) {
+                        teams[i].name = info.mode.teams[i].name;
+                    }
+                }
+            }
+
+            // Sort each team's roster by score
+            for (const team of teams) {
+                team.players.sort((a, b) => b.score - a.score);
+            }
+
+            const totalPlayers = teams.reduce((sum, t) => sum + t.players.length, 0);
+
+            let html = `<div class="section-title">Teams (${totalPlayers} players)</div>`;
+            html += `<div class="team-grid">`;
+
+            teams.forEach((team, idx) => {
+                const hue = team.hue !== null ? team.hue : idx * 120;
+                const color = `hsl(${hue}, 70%, 65%)`;
+                const borderColor = `hsl(${hue}, 70%, 65%, 0.3)`;
+
+                html += `
+                    <div class="team-panel" style="border-color: ${borderColor};">
+                        <div class="team-header" style="color: ${color};">${escapeHtml(team.name)}</div>
+                        <div class="team-stat-row"><span>Gems</span><span>${team.gems.toLocaleString()}</span></div>
+                        <div class="team-stat-row"><span>Level</span><span>${team.level}</span></div>
+                        <div class="team-stat-row"><span>Players</span><span>${team.players.length}</span></div>
+                        <div class="team-roster">
+                            ${team.players.length === 0
+                                ? '<div style="text-align:center;color:#555;font-size:10px;padding:8px;">No players</div>'
+                                : team.players.map(p => `
+                                    <div class="team-player">
+                                        <span class="team-player-name">
+                                            <span class="ecp-dot ${p.ecp ? 'yes' : 'no'}"></span>${escapeHtml(p.name)}
+                                        </span>
+                                        <span class="team-player-score">${p.score.toLocaleString()}</span>
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            return html;
+        }
+
+        // ==================================================
+        // PLAYER VIEW (non-team modes)
+        // ==================================================
+        function renderPlayerView(info) {
+            const hasECP = (player) => {
+                return !!(player.ecp || player.custom || player.custom_badge ||
+                    player.ecp_custom || (player.badge && player.badge !== 'none'));
+            };
+
+            const players = [];
+            if (info.players) {
+                for (const key of Object.keys(info.players)) {
+                    const player = info.players[key];
+                    players.push({
+                        name: player.player_name || player.name || 'Unknown',
+                        ecp: hasECP(player),
+                        score: player.score || player.kills || player.points || 0,
+                        hue: player.hue !== undefined ? player.hue : null
+                    });
+                }
+            }
+
+            players.sort((a, b) => b.score - a.score);
+
+            if (players.length === 0) {
+                return `<div class="empty-state"><div class="empty-state-title">No players</div></div>`;
+            }
+
+            let html = `<div class="section-title">Players (${players.length})</div>`;
+            html += `<div class="player-list">`;
+
+            for (const player of players) {
+                const color = player.hue !== null ? `hsl(${player.hue}, 70%, 65%)` : 'var(--text)';
+                html += `
+                    <div class="player-row">
+                        <span class="player-name" style="color: ${color};">${escapeHtml(player.name)}</span>
+                        <span class="player-ecp ${player.ecp ? '' : 'no-ecp'}">${player.ecp ? 'ECP' : 'none'}</span>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            return html;
         }
 
         // ==================================================
@@ -1063,7 +1269,7 @@
         }
 
         // ==================================================
-        // EVENT HANDLERS
+        // EVENTS
         // ==================================================
         document.querySelectorAll('#region-filters .chip').forEach(chip => {
             chip.onclick = () => {
@@ -1131,7 +1337,7 @@
                 playerSearchHint.textContent = 'Finds servers where a player is active';
                 clearPlayerSearchBtn.classList.remove('visible');
                 playerSearchResults = new Map();
-                playerSearchToken++; // cancel any in-flight searches
+                playerSearchToken++;
                 playerSearchInProgress = false;
                 renderServerList();
             }
@@ -1173,7 +1379,7 @@
         fetchServers();
         refreshInterval = setInterval(fetchServers, CONFIG.pollRate);
 
-        console.log('%c NOIR serverlist active and running, for now at least ', 'background: #44ff88; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+        console.log('%c NOIR serverlist active ', 'background: #44ff88; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
     </script>
 </body>
 </html>
