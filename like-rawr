@@ -1,1 +1,5 @@
-testing my server code ignore me
+testing my server and if it can pull stuff from here, higher levels of indentation marked using ">" means to the server it should pull that with a higher priority, can use that for like modules inside noir that need to initialise faster/first yeah? man i love coding, i'm so good at it. 
+
+> noirteststringA
+
+>  >noirteststringB
